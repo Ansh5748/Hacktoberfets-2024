@@ -1,0 +1,54 @@
+import os
+import hashlib
+
+def get_file_hash(file_path):
+    """
+    Calculates the MD5 hash of a file's content.
+
+    Args:
+        file_path (str): Path to the file.
+
+    Returns:
+        str: The MD5 hash of the file content.
+    """
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+def find_duplicates(directory):
+    """
+    Finds and prints duplicate files in the given directory.
+
+    Args:
+        directory (str): The path to the directory to search for duplicates.
+
+    Returns:
+        dict: A dictionary where keys are file hashes and values are lists of file paths.
+    """
+    file_hashes = {}
+    
+    for root, _, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_hash = get_file_hash(file_path)
+            
+            if file_hash in file_hashes:
+                file_hashes[file_hash].append(file_path)
+            else:
+                file_hashes[file_hash] = [file_path]
+    
+    # Print duplicates
+    for hash_value, file_list in file_hashes.items():
+        if len(file_list) > 1:
+            print(f"Duplicate files found for hash {hash_value}:")
+            for file in file_list:
+                print(f" - {file}")
+            print()
+
+    return file_hashes
+
+if __name__ == "__main__":
+    directory_to_check = './'  # Replace with your directory path
+    find_duplicates(directory_to_check)
